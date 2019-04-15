@@ -1,0 +1,31 @@
+{
+  "name": "xterm-js-shell",
+  "version": "1.0.0",
+  "description": "Building block for CLI environments for xterm.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RangerMauve/xterm-js-shell.git"
+  },
+  "keywords": [
+    "xterm",
+    "xtermjs",
+    "shell",
+    "js",
+    "pty",
+    "terminal"
+  ],
+  "author": "rangermauve",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RangerMauve/xterm-js-shell/issues"
+  },
+  "homepage": "https://github.com/RangerMauve/xterm-js-shell#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "local-echo": "github:rangermauve/local-echo#patch-2"
+  }
+}

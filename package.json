@@ -4,8 +4,14 @@
   "description": "Building block for CLI environments for xterm.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-example": "parcel build example/example.js --out-dir example --out-file example-bundle.js"
   },
+  "browserslist": [
+    "last 3 Chrome versions",
+    "Firefox 63",
+    "Node 11"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RangerMauve/xterm-js-shell.git"
@@ -27,5 +33,8 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "local-echo": "github:rangermauve/local-echo#patch-2"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
   }
 }

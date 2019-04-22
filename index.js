@@ -1,4 +1,7 @@
-const LocalEchoController = require('local-echo')
+import LocalEchoController from 'local-echo'
+
+console.log(LocalEchoController)
+
 const chalk = require('chalk')
 
 const ERROR_NOT_FOUND = (command) => `Command Not Found: ${command}`
@@ -14,16 +17,14 @@ const RESET = chalk.reset
  * @param {Array<string>} args Arguments for the command
  */
 
-module.exports =
-
 /** Shell abstraction for Xterm.js */
-class XtermJSShell {
+export default class XtermJSShell {
   /**
    * Instantiate and attach a shell to the terminal
    * @param {Terminal} term The xterm.js terminal
    */
   constructor (term) {
-    this.prompt = `${this.color.yellow}> ${RESET}`
+    this.prompt = this.color.yellow('> ')
     this.commands = new Map()
     this.echo = new LocalEchoController(term)
 
@@ -122,6 +123,30 @@ class XtermJSShell {
       return []
     }
   }
+
+  async readChar (message) {
+    return this.echo.readChar(message)
+  }
+
+  async readLine (message) {
+    return this.echo.read(message)
+  }
+
+  async abortRead (reason) {
+    return this.echo.abortRead(reason)
+  }
+
+  async print (message) {
+    return this.echo.print(message)
+  }
+
+  async printLine (message) {
+    return this.echo.println(message)
+  }
+
+  async printList (list) {
+    return this.echo.printWide(list)
+  }
 }
 
 class SubShell {
@@ -137,7 +162,7 @@ class SubShell {
 
   async readLine (message) {
     this.checkDestroyed()
-    return this.shell.read(message)
+    return this.shell.readLine(message)
   }
 
   async abortRead (reason) {
@@ -152,12 +177,12 @@ class SubShell {
 
   async printLine (message) {
     this.checkDestroyed()
-    this.shell.println(message)
+    this.shell.printLine(message)
   }
 
   async printList (list) {
     this.checkDestroyed()
-    this.shell.printWide(list)
+    this.shell.printList(list)
   }
 
   get color () {

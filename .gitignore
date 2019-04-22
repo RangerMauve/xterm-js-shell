@@ -62,3 +62,7 @@ typings/
 
 # Don't lock packages
 package-lock.json
+
+# Ignore the example bundle
+example-bundle.js
+example-bundle.js.map

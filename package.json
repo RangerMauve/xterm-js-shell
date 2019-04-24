@@ -32,6 +32,7 @@
   "homepage": "https://github.com/RangerMauve/xterm-js-shell#readme",
   "dependencies": {
     "chalk": "^2.4.2",
+    "event-iterator": "^1.2.0",
     "local-echo": "github:rangermauve/local-echo#patch-2"
   },
   "devDependencies": {

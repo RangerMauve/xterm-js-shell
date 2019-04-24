@@ -10,9 +10,8 @@ shell
   .command('help', async (shell) => {
     await shell.printLine(`
 Try running one of these commands:
-- fetch
-- echo
-- confirm
+${shell.commands.map((command) => ` - ${command}`).join('\n')}
+
 `)
   })
   .command('fetch', async (shell, [ url ]) => {
@@ -25,10 +24,10 @@ Try running one of these commands:
   .command('echo', async (shell, args) => {
     let message = null
 
-    if(args.length) await shell.printLine(args.join(' '))
+    if (args.length) await shell.printLine(args.join(' '))
 
     // Loop until they hit enter without typing anything
-    while (message = await shell.readLine('> ')) {
+    while (message = await shell.readLine('')) {
       await shell.printLine(message)
     }
   })
@@ -36,6 +35,29 @@ Try running one of these commands:
     const char = await shell.readChar('Y/n?')
 
     await shell.printLine(char)
+  })
+  .command('ssh', async (shell, {url}) => {
+    // For use with https://github.com/RangerMauve/websocket-shell-service
+
+    if(!url) url = 'ws:localhost:8080'
+
+    const socket = new WebSocket(url)
+
+    let closed = false
+
+    socket.onclose = () => {
+      closed = true
+      shell.printLine(`Connection to ${url} closed`)
+    }
+
+    socket.onmessage = ({data}) => {
+      shell.print(data)
+    }
+
+    for await(let data of shell.readStream()) {
+      if(closed) break
+      socket.send(data)
+    }
   })
 
 // Start the Read-Eval-Print-Loop

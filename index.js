@@ -1,6 +1,5 @@
 import LocalEchoController from 'local-echo'
-
-console.log(LocalEchoController)
+import {EventIterator} from 'event-iterator'
 
 const chalk = require('chalk')
 
@@ -8,7 +7,6 @@ const ERROR_NOT_FOUND = (command) => `Command Not Found: ${command}`
 const ERROR_ALREADY_REGISTERED = (command) => `Command Already Registered: ${command}`
 
 const WHITESPACE_REGEX = /[\s\r\n]+/g
-const RESET = chalk.reset
 
 /**
  * Command structure
@@ -16,6 +14,14 @@ const RESET = chalk.reset
  * @param {SubShell} shell Shell instance for input/output
  * @param {Array<string>} args Arguments for the command
  */
+
+/**
+  * Autocomplete Callback structure
+  * @callback AutocompleteProvider
+  * @param {number} index The index in the args array to autocomplete
+  * @param {Array<string>} args The list of arguments being passed to the command
+  * @return {Array<string>} The list of options the user could try
+  */
 
 /** Shell abstraction for Xterm.js */
 export default class XtermJSShell {
@@ -27,6 +33,7 @@ export default class XtermJSShell {
     this.prompt = this.color.yellow('> ')
     this.commands = new Map()
     this.echo = new LocalEchoController(term)
+    this.term = term
 
     this.attached = true
 
@@ -88,13 +95,21 @@ export default class XtermJSShell {
    * @return {Promise}                Resolves after the command has finished
    */
   async run (command, args) {
-    const fn = this.commands.get(command)
+    if (!this.commands.has(command)) throw new TypeError(ERROR_NOT_FOUND(command))
 
-    if (!fn) return new TypeError(ERROR_NOT_FOUND(command))
+    const { fn } = this.commands.get(command)
 
     const shell = new SubShell(this)
 
-    await fn(shell, args)
+    const result = fn(shell, args)
+
+    if (result.then) {
+      await result
+    } else if (result.next) {
+      for await (let data of result) {
+        shell.print(data)
+      }
+    }
 
     shell.destroy()
   }
@@ -105,20 +120,27 @@ export default class XtermJSShell {
    * @param  {Command}      fn      Async function that takes a shell / args
    * @return {XtermJSShell}          Returns self for chaining
    */
-  command (command, fn) {
+  command (command, fn, autocomplete) {
     if (this.commands.has(command)) {
       console.warn(ERROR_ALREADY_REGISTERED(command))
     }
 
-    this.commands.set(command, fn)
+    this.commands.set(command, {
+      command, fn, autocomplete
+    })
 
     return this
   }
 
   // Internal command for auto completion of command names
   autoCompleteCommands (index, tokens) {
+    const command = tokens[0]
     if (index === 0) {
-      return [...this.commands.values()]
+      return [...this.commands.keys()]
+    } else if (this.commands.has(command)) {
+      const { autocomplete } = this.commands.get(command)
+      if (!autocomplete) return []
+      return autocomplete(index - 1, tokens.slice(1))
     } else {
       return []
     }
@@ -137,7 +159,7 @@ export default class XtermJSShell {
   }
 
   async print (message) {
-    return this.echo.print(message)
+    return this.term.write(message)
   }
 
   async printLine (message) {
@@ -153,6 +175,21 @@ class SubShell {
   constructor (shell) {
     this.shell = shell
     this.destroyed = false
+  }
+
+  async * readStream () {
+    const iterator = new EventIterator((push) => {
+      this.shell.term.on('data', push)
+      this.shell.detach()
+    }, (push) => {
+      this.shell.term.off('data', push)
+      this.shell.attach()
+    })
+
+    for await (let data of iterator) {
+      if (this.destroyed) break
+      yield data
+    }
   }
 
   async readChar (message) {
@@ -187,6 +224,10 @@ class SubShell {
 
   get color () {
     return chalk
+  }
+
+  get commands () {
+    return [...this.shell.commands.keys()]
   }
 
   checkDestroyed () {

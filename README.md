@@ -16,7 +16,7 @@ ${shell.commands.map((command) => ` - ${command}`).join('\n')}
 
 `)
   })
-  .command('fetch', async (shell, [ url ]) => {
+  .command('curl', async (shell, [ url ]) => {
     const response = await fetch(url)
 
     const text = await response.text()
@@ -38,7 +38,7 @@ ${shell.commands.map((command) => ` - ${command}`).join('\n')}
 
     await shell.printLine(char)
   })
-  .command('ssh', async (shell, { url }) => {
+  .command('ssh', async (shell, {url}) => {
     // For use with https://github.com/RangerMauve/websocket-shell-service
 
     if(!url) url = 'ws:localhost:8080'

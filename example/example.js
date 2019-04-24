@@ -14,7 +14,7 @@ ${shell.commands.map((command) => ` - ${command}`).join('\n')}
 
 `)
   })
-  .command('fetch', async (shell, [ url ]) => {
+  .command('curl', async (shell, [ url ]) => {
     const response = await fetch(url)
 
     const text = await response.text()

@@ -67,4 +67,9 @@ package-lock.json
 example-bundle.js
 example-bundle.js.map
 
+# Parcel JS cache
 .cache/
+
+# Ignore bundles for Git
+bundle.js
+bundle.js.map

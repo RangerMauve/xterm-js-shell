@@ -1,9 +1,19 @@
 # xterm-js-shell
 Building block for CLI environments for xterm.js
 
-```js
-const XtermJSShell = require('xterm-js-shell')
+```
+<script src="//unpkg.com/xterm-js-shell/bundle.js"></script>
+```
 
+-- OR --
+
+```
+npm install --save xterm-js-shell
+
+const XtermJSShell = require('xterm-js-shell/bundle.js')
+```
+
+```js
 const terminal = new Terminal()
 
 const shell = new XtermJSShell(terminal)

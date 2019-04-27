@@ -1,7 +1,8 @@
 import LocalEchoController from 'local-echo'
 import {EventIterator} from 'event-iterator'
 
-const chalk = require('chalk')
+const style = require('ansi-styles')
+const minimist = require('minimist-string')
 
 const ERROR_NOT_FOUND = (command) => `Command Not Found: ${command}`
 const ERROR_ALREADY_REGISTERED = (command) => `Command Already Registered: ${command}`
@@ -30,7 +31,7 @@ export default class XtermJSShell {
    * @param {Terminal} term The xterm.js terminal
    */
   constructor (term) {
-    this.prompt = async () => this.color.yellow('> ')
+    this.prompt = async () => '$ '
     this.commands = new Map()
     this.echo = new LocalEchoController(term)
     this.term = term
@@ -60,11 +61,15 @@ export default class XtermJSShell {
   }
 
   /**
-   * Utility for getting
-   * @return {chalk} A [chalk](https://www.npmjs.com/package/chalk) instance
+   * Utility for doing colors
+   * @return {object} The foreground instance of [ansi-colors](https://github.com/chalk/ansi-styles)
    */
   get color () {
-    return chalk
+    return style.color
+  }
+
+  get bgColor () {
+    return style.bgColor
   }
 
   /**
@@ -76,11 +81,13 @@ export default class XtermJSShell {
     const prompt = await this.prompt()
     const line = await this.echo.read(prompt)
 
-    const [command, ...args] = line.split(WHITESPACE_REGEX)
+    const args = minimist(line)
+    const raw_args = args._
+    const command = raw_args.shift()
 
     try {
       // Eval / Print
-      await this.run(command, args)
+      await this.run(command, raw_args, args)
     } catch (e) {
       console.error(e)
       await this.echo.println(e.message)
@@ -225,7 +232,11 @@ class SubShell {
   }
 
   get color () {
-    return chalk
+    return style.color
+  }
+
+  get bgColor () {
+    return style.bgColor
   }
 
   get commands () {
@@ -234,6 +245,14 @@ class SubShell {
 
   get env () {
     return this.shell.env
+  }
+
+  get cols () {
+    return this.shell.cols
+  }
+
+  get rows () {
+    return this.shell.rows
   }
 
   checkDestroyed () {

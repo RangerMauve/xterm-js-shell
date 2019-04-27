@@ -30,10 +30,11 @@ export default class XtermJSShell {
    * @param {Terminal} term The xterm.js terminal
    */
   constructor (term) {
-    this.prompt = this.color.yellow('> ')
+    this.prompt = async () => this.color.yellow('> ')
     this.commands = new Map()
     this.echo = new LocalEchoController(term)
     this.term = term
+    this.env = {}
 
     this.attached = true
 
@@ -72,7 +73,8 @@ export default class XtermJSShell {
    */
   async repl () {
     // Read
-    const line = await this.echo.read(this.prompt)
+    const prompt = await this.prompt()
+    const line = await this.echo.read(prompt)
 
     const [command, ...args] = line.split(WHITESPACE_REGEX)
 
@@ -228,6 +230,10 @@ class SubShell {
 
   get commands () {
     return [...this.shell.commands.keys()]
+  }
+
+  get env () {
+    return this.shell.env
   }
 
   checkDestroyed () {

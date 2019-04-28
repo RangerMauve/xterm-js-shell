@@ -42,7 +42,8 @@
     "ansi-styles": "^3.2.1",
     "event-iterator": "^1.2.0",
     "local-echo": "github:rangermauve/local-echo#patch-2",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "string-to-argv": "^1.0.0"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.3"

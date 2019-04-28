@@ -2,7 +2,8 @@ import LocalEchoController from 'local-echo'
 import {EventIterator} from 'event-iterator'
 
 const style = require('ansi-styles')
-const minimist = require('minimist-string')
+const minimist = require('minimist')
+const stringToArgv = require('string-to-argv')
 
 const ERROR_NOT_FOUND = (command) => `Command Not Found: ${command}`
 const ERROR_ALREADY_REGISTERED = (command) => `Command Already Registered: ${command}`
@@ -81,13 +82,16 @@ export default class XtermJSShell {
     const prompt = await this.prompt()
     const line = await this.echo.read(prompt)
 
-    const args = minimist(line)
-    const raw_args = args._
-    const command = raw_args.shift()
+    const argv = stringToArgv(line)
+
+    const command = argv.shift()
+    const parsed = minimist(argv)
+
+    const raw_args = parsed._
 
     try {
       // Eval / Print
-      await this.run(command, raw_args, args)
+      await this.run(command, raw_args, parsed)
     } catch (e) {
       console.error(e)
       await this.echo.println(e.message)
@@ -103,14 +107,14 @@ export default class XtermJSShell {
    * @param  {Array<string>}  args    The list of command arguments to run
    * @return {Promise}                Resolves after the command has finished
    */
-  async run (command, args) {
+  async run (command, args, flags) {
     if (!this.commands.has(command)) throw new TypeError(ERROR_NOT_FOUND(command))
 
     const { fn } = this.commands.get(command)
 
     const shell = new SubShell(this)
 
-    const result = fn(shell, args)
+    const result = fn(shell, args, flags)
 
     if (result.then) {
       await result
